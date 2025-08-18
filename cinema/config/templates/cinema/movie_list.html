@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Фильмы</h1>
+
+<form method="get" class="filters" style="margin-bottom:1rem; display:flex; gap:.5rem; flex-wrap:wrap;">
+  <input type="text" name="q" value="{{ q }}" placeholder="Поиск по названию">
+  <select name="genre">
+    <option value="">Все жанры</option>
+    {% for g in genres %}
+      <option value="{{ g.name }}" {% if active_genre == g.name %}selected{% endif %}>{{ g.get_name_display|default:g.name }}</option>
+    {% endfor %}
+  </select>
+  <input type="number" name="year" value="{{ active_year }}" placeholder="Год" min="1900" max="2100">
+  <button type="submit">Фильтровать</button>
+  <a href="{% url 'movie-list' %}">Сбросить</a>
+</form>
+
+<ul>
+  {% for m in movies %}
+    <li style="margin-bottom: .75rem;">
+      <strong>{{ m.name }}</strong> ({{ m.year }})<br>
+      Жанры: {% for g in m.genres.all %}{{ g.get_name_display|default:g.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}<br>
+      Актёры: {% for a in m.actors.all %}{{ a.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}<br>
+      Режиссёры: {% for d in m.directors.all %}{{ d.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+    </li>
+  {% empty %}
+    <li>Ничего не найдено.</li>
+  {% endfor %}
+</ul>
+
+<!-- Пагинация -->
+{% if is_paginated %}
+<nav class="pagination" style="display:flex; gap:.5rem; align-items:center;">
+  {% if page_obj.has_previous %}
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if active_genre %}genre={{ active_genre }}&{% endif %}{% if active_year %}year={{ active_year }}&{% endif %}page={{ page_obj.previous_page_number }}">« Назад</a>
+  {% endif %}
+
+  Стр. {{ page_obj.number }} из {{ paginator.num_pages }}
+
+  {% if page_obj.has_next %}
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if active_genre %}genre={{ active_genre }}&{% endif %}{% if active_year %}year={{ active_year }}&{% endif %}page={{ page_obj.next_page_number }}">Вперёд »</a>
+  {% endif %}
+</nav>
+{% endif %}
+{% endblock %}

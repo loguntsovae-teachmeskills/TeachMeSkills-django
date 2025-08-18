@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Cinema{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Пример подключения стилей -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+<header style="padding:1rem; background:#222; color:white;">
+    <nav style="display:flex; gap:1rem;">
+        <a href="/" style="color:white; text-decoration:none;">Главная</a>
+        <a href="{% url 'movie-list' %}" style="color:white; text-decoration:none;">Фильмы</a>
+        <!-- Добавь другие ссылки по мере необходимости -->
+    </nav>
+</header>
+
+<main style="padding:1rem;">
+    {% block content %}
+    <!-- Контент страниц -->
+    {% endblock %}
+</main>
+
+<footer style="padding:1rem; background:#eee; text-align:center; margin-top:2rem;">
+    <p>&copy; {{ year|default:2025 }} My Cinema</p>
+</footer>
+</body>
+</html>
