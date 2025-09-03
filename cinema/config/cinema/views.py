@@ -3,6 +3,7 @@ from django.views.generic import ListView
 from django.db.models import Prefetch, Q
 from .models import Movie, Genre, Actor, Director
 
+
 class MovieListView(ListView):
     model = Movie
     template_name = "cinema/movie_list.html"
