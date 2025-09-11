@@ -1,7 +1,11 @@
 from rest_framework import viewsets, filters
+
+from . import permissions
 from .models import Book, Author
+from .permissions import AuthorPermission
 from .serializers import BookSerializer, AuthorSerializer
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 
 class BookViewSet(viewsets.ModelViewSet):
@@ -24,8 +28,15 @@ class BookViewSet(viewsets.ModelViewSet):
 
 
 class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated, AuthorPermission]
     serializer_class = AuthorSerializer
     queryset = Author.objects.filter(is_active=True).order_by("name")
+
+    def get_permissions(self):
+        if self.action == "list":
+            return [IsAuthenticated()]
+        elif self.action == "retrieve":
+            return [IsAuthenticated(), AuthorPermission()]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

@@ -18,11 +18,14 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Libs
     "rest_framework",
+    "rest_framework_simplejwt",
     # Apps
     "books",
 ]
 
 MIDDLEWARE = [
+    "library.middleware.RequestTimingMiddleware",
+    "library.middleware.FirstMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -30,6 +33,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "library.middleware.LastMiddleware",
 ]
 
 ROOT_URLCONF = "library.urls"
@@ -103,3 +107,24 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,             # по желанию
+    "BLACKLIST_AFTER_ROTATION": True,          # если используете blacklist
+    "ALGORITHM": "HS256",
+    # "SIGNING_KEY": SECRET_KEY,  # по умолчанию возьмёт SECRET_KEY
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}
