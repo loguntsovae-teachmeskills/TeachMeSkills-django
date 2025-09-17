@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     # Apps
     "books",
+    "shop",
 ]
 
 MIDDLEWARE = [
@@ -113,7 +114,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
+        # "rest_framework.permissions.IsAuthenticated",
     ),
 }
 

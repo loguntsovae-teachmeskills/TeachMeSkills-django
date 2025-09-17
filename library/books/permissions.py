@@ -8,5 +8,6 @@ class AuthorPermission(BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
-        print("has_object_permission")
-        return request.user == obj.user
+        # print("has_object_permission")
+        # return request.user == obj.user
+        return True
