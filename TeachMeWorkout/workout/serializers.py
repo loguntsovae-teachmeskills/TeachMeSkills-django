@@ -6,7 +6,7 @@ User = get_user_model()
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
-    is_coach = serializers.SerializerMethodField()
+    is_coach = serializers.SerializerMethodField(help_text="Is coach means is coach")
 
     def get_is_coach(self, user) -> bool:
         return hasattr(user, "coach")
@@ -24,11 +24,29 @@ class CoachSerializer(serializers.ModelSerializer):
         fields = ["id", "user"]
 
 
+class PlansToExerciseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExerciseToPlan
+        fields = ["id", "plan", "amount"]
+
+
 class ExerciseSerializer(serializers.ModelSerializer):
+    plan = PlansToExerciseSerializer(many=True, read_only=True)
+
+    def validate_title(self, value):
+        if Exercise.objects.filter(title__iexact=value).exists():
+            raise serializers.ValidationError("Exercise with this title already exists (case-insensitive).")
+        return value
+
     class Meta:
         model = Exercise
-        fields = ["id", "title"]
+        fields = ["id", "title", "plan"]
 
+
+class ExerciseOnlyTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exercise
+        fields = ["title"]
 
 
 class ExercisePlanNestedSerializer(serializers.ModelSerializer):

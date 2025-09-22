@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models.aggregates import Count
 from rest_framework import generics, permissions
 from django.db.models import Q
 from rest_framework import status, viewsets
@@ -8,8 +7,11 @@ from .models import Training, Exercise, TrainingPlan, ExerciseToPlan, Coach
 from .serializers import (
     ExerciseSerializer,
     TrainingPlanSerializer,
-    CoachSerializer,
+    CoachSerializer, ExerciseOnlyTitleSerializer,
 )
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from .permissions import ExercisePermission
 
 User = get_user_model()
 
@@ -47,9 +49,9 @@ class ExerciseViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet
 ):
-    queryset = Exercise.objects.all()
+    queryset = Exercise.objects.all().prefetch_related("plan")
     serializer_class = ExerciseSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [ExercisePermission]
 
     def get_permissions(self):
         if self.request.method in permissions.SAFE_METHODS:
@@ -61,3 +63,20 @@ class ExerciseViewSet(
             perms.append(permissions.IsAdminUser())
 
         return perms
+
+    @action(detail=True, methods=["post"], url_path="duplicate")
+    # exercises/<ID>/duplicate/
+    def duplicate_exercise_with_prefix(self, request, pk=None):
+        instance = self.get_object()
+        data = {"title": instance.title + "DUPLICATE"}
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=["get"], url_path="list-titles")
+    # exercises/list_titles
+    def list_titles(self, request):
+        instances = self.get_queryset()
+        serializer = ExerciseOnlyTitleSerializer(instances, many=True)
+        return Response(serializer.data)

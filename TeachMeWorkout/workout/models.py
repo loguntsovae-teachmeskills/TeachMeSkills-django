@@ -15,7 +15,7 @@ class Training(models.Model):
 
 
 class Exercise(models.Model):
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, help_text="Exercise title")
 
     class Meta:
         constraints = [
@@ -37,6 +37,9 @@ class ExerciseToPlan(models.Model):
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name="plan")
     plan = models.ForeignKey(TrainingPlan, on_delete=models.CASCADE, related_name="exercise")
     amount = models.PositiveSmallIntegerField()
+
+    class Meta:
+        unique_together = ("exercise", "plan")
 
 
 class Coach(models.Model):
