@@ -12,6 +12,7 @@ from .serializers import (
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .permissions import ExercisePermission
+from .tasks import fill_plan_from_parent
 
 User = get_user_model()
 
@@ -30,6 +31,33 @@ class TrainingPlanViewSet(
 ):
     serializer_class = TrainingPlanSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    @action(detail=True, methods=["post"], url_path="duplicate")
+    def duplicate(self, request, pk=None):
+        """
+        POST /training-plans/{id}/duplicate/
+        Создаёт копию плана вместе с упражнениями.
+        """
+        plan = self.get_object()
+
+        # создаём копию плана
+        new_plan = TrainingPlan.objects.create(
+            # title=f"{plan.title} (копия)",
+            author=request.user if request.user.is_authenticated else plan.author,
+        )
+
+        print("start")
+        fill_plan_from_parent.apply_async(
+            kwargs={
+                "new_plan_id": new_plan.id,
+                "parent_plan_id": plan.id,
+            },
+            countdown=5
+        )
+        print("finish")
+
+        serializer = self.get_serializer(new_plan)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         user = self.request.user
