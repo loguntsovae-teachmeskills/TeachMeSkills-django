@@ -1,0 +1,1 @@
+SEATS_AMOUNT = 1
